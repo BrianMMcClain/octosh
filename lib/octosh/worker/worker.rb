@@ -3,7 +3,7 @@ module Octosh
     
     attr_reader :host, :user, :password
     
-    def initalize(host, user, pass)
+    def initialize(host, user, pass)
       @host = host
       @user = user
       @password = pass
@@ -16,5 +16,6 @@ module Octosh
       end
       
       return output
+    end
   end
 end

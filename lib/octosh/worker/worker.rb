@@ -1,3 +1,5 @@
+require 'net/ssh'
+
 module Octosh
   class Worker
     

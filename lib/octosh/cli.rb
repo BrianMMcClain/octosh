@@ -38,13 +38,21 @@ module Octosh
           options.default_user = user
         end
         
+        options.password_prompt = false
+        opts.on('-p', '--password', 'Prompt for password') do
+          options.password_prompt = true
+        end
+        
+        options.uniform_password = false
+        opts.on('-a', '--uniform-password', 'Use the same password for all hosts') do
+          options.uniform_password = true
+        end
+        
         opts.on_tail('-h', '--help', 'Display this screen' ) do
           puts opts
           exit
         end
       end.parse!
-      
-      puts options.config
       
       if not ARGV.empty? and not options.config
         options.config = ARGV[0]
@@ -57,12 +65,48 @@ module Octosh
       elsif (options.bash or options.script) and options.hosts
         puts "Using inline execution"
         options.mode = Octosh::CLI::MODE::INLINE
+        
+        if options.bash and options.script
+          "Error -- Cannot specify both an inline command to run (-b) and a script file (-s)"
+          exit
+        elsif options.bash
+          self.inline_bash(options.hosts, options.bash, options.password_prompt, options.uniform_password)
+        elsif options.script
+          pass
+        else
+          "Error -- Something broke"
+          exit
+        end
+          
       else
         puts "Error -- Must either provide an Octo config file or arguments for inline execution (--hosts along with -b or -s)"
         exit
       end
-      
-      puts options.inspect
+
     end
+    
+    def self.inline_bash(hosts, bash, password_prompt=true, uniform_password=false)
+      
+      password = nil
+      
+      hosts.each do |host|
+        if password_prompt
+          # Password authentication
+          if uniform_password and password.nil?
+            # One password for all hosts
+            password = Octosh::Helper.password_prompt("Password: ")
+          elsif not uniform_password
+            # One password for each host
+            password = Octosh::Helper.password_prompt("Password for #{host}: ")
+          end
+          user,hostname = host.split("@")
+          worker = Octosh::Worker.new(hostname, user, password)
+          puts worker.exec(bash)
+        else
+          # Identify file authentication
+        end
+      end
+    end
+    
   end
 end

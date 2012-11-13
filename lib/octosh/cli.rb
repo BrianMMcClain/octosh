@@ -1,6 +1,9 @@
 require 'optparse'
 require 'ostruct'
 
+$:.push File.dirname(__FILE__) + '../'
+require 'octosh'
+
 module Octosh
   class CLI
     

@@ -1,3 +1,1 @@
-module Octosh
-  
-end
+require 'octosh/worker'

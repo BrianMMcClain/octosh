@@ -1,5 +1,7 @@
 require 'net/ssh'
 require 'net/scp'
+require 'uuid'
+require 'pathname'
 
 module Octosh
   class Worker
@@ -28,6 +30,13 @@ module Octosh
     
     def read(remote_path)
       return @ssh.scp.download!(remote_path)
+    end
+    
+    def exec_script(script_path)
+      tmp_script_name = "octosh-#{Pathname.new(script_path).basename.to_s}-#{UUID.new.generate}"
+      self.put(script_path, "/tmp/#{tmp_script_name}")
+      self.exec("chmod +x /tmp/#{tmp_script_name}")
+      return self.exec("/tmp/#{tmp_script_name}")
     end
   end
 end

@@ -1,5 +1,6 @@
 require 'optparse'
 require 'ostruct'
+require 'parallel'
 
 $:.push File.dirname(__FILE__) + '../'
 require 'octosh'
@@ -108,6 +109,8 @@ module Octosh
     end
     
     def self.inline_bash(hosts, bash, user, password_prompt=true, uniform_password=false)
+      workers = []
+      
       hosts.each do |host|
         prompt_for_password(password_prompt, uniform_password)
         exec_user,hostname = ""
@@ -119,12 +122,17 @@ module Octosh
           hostname = host
         end
         worker = Octosh::Worker.new(hostname, exec_user, @password)
-        
-        puts "#{host} -- #{worker.exec(bash)}"
+        workers << worker
+      end
+      
+      Parallel.each(workers, :in_threads => workers.length) do |worker|
+        puts "#{worker.host} -- #{worker.exec(bash)}"
       end
     end
     
     def self.exec_script(hosts, script, user, password_prompt=true, uniform_password=false)
+      workers = []
+      
       hosts.each do |host|
         prompt_for_password(password_prompt, uniform_password)
         exec_user,hostname = ""
@@ -136,8 +144,13 @@ module Octosh
           hostname = host
         end
         worker = Octosh::Worker.new(hostname, exec_user, @password)
-        puts "#{host} -- #{worker.exec_script(script)}"
+        workers << worker
       end
+      
+      Parallel.each(workers, :in_threads => workers.length) do |worker|
+        puts "#{worker.host} -- #{worker.exec_script(script)}"
+      end
+      
     end
     
   end

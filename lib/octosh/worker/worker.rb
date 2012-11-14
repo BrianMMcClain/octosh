@@ -17,7 +17,25 @@ module Octosh
     end
     
     def exec(command)
-      return @ssh.exec!(command)
+      channel = @ssh.open_channel do |ch|
+        ch.exec(command) do |ch, success|
+          raise "Error executing #{command}" unless success
+          
+          ch.on_data do |c, data|
+            puts "#{@host} -- #{data.to_s}"
+          end
+          
+          ch.on_extended_data do |c, type, data|
+            puts "#{@host} -- #{data}"
+          end
+          
+          ch.on_close do
+            puts "Octosh execution complete!"
+          end
+        end
+      end
+      
+      channel.wait
     end
     
     def put(local_path, remote_path)

@@ -12,6 +12,8 @@ module Octosh
       INLINE = :inline
     end
     
+    @password = nil
+    
     def self.start
       options = OpenStruct.new
 
@@ -34,7 +36,8 @@ module Octosh
           options.hosts = list
         end
         
-        opts.on('-u', '--user', 'User to use when a user isn\'t defined in the --hosts list (ie. just IP address)') do |user|
+        options.default_user = "root"
+        opts.on('-u', '--user USER', 'User to use when a user isn\'t defined in the --hosts list (ie. just IP address)') do |user|
           options.default_user = user
         end
         
@@ -54,10 +57,14 @@ module Octosh
         end
       end.parse!
       
+      puts options.inspect
+      
       if not ARGV.empty? and not options.config
+        puts "Using config file"
         options.config = ARGV[0]
         options.mode = Octosh::CLI::MODE::CONFIG
       elsif ARGV.empty? and options.config
+        puts "Using config file"
         options.mode = Octosh::CLI::MODE::CONFIG
       elsif not ARGV.empty? and options.config
         puts "Two config files specified (#{options.config} and #{ARGV[0]}), using explicit config file (#{options.config})"
@@ -70,9 +77,11 @@ module Octosh
           "Error -- Cannot specify both an inline command to run (-b) and a script file (-s)"
           exit
         elsif options.bash
-          self.inline_bash(options.hosts, options.bash, options.password_prompt, options.uniform_password)
+          puts "Inline bash"
+          self.inline_bash(options.hosts, options.bash, options.default_user, options.password_prompt, options.uniform_password)
         elsif options.script
-          pass
+          puts "Call script on each server"
+          self.exec_script(options.hosts, options.script, options.default_user, options.password_prompt, options.uniform_password)
         else
           "Error -- Something broke"
           exit
@@ -85,26 +94,49 @@ module Octosh
 
     end
     
-    def self.inline_bash(hosts, bash, password_prompt=true, uniform_password=false)
-      
-      password = nil
-      
-      hosts.each do |host|
-        if password_prompt
-          # Password authentication
-          if uniform_password and password.nil?
-            # One password for all hosts
-            password = Octosh::Helper.password_prompt("Password: ")
-          elsif not uniform_password
-            # One password for each host
-            password = Octosh::Helper.password_prompt("Password for #{host}: ")
-          end
-          user,hostname = host.split("@")
-          worker = Octosh::Worker.new(hostname, user, password)
-          puts worker.exec(bash)
-        else
-          # Identify file authentication
+    def self.prompt_for_password(password_prompt, uniform_password, host="current host")
+      if password_prompt
+        # Password authentication
+        if uniform_password and @password.nil?
+          # One password for all hosts
+          @password = Octosh::Helper.password_prompt("Password: ")
+        elsif not uniform_password
+          # One password for each host
+          @password = Octosh::Helper.password_prompt("Password for #{host}: ")
         end
+      end
+    end
+    
+    def self.inline_bash(hosts, bash, user, password_prompt=true, uniform_password=false)
+      hosts.each do |host|
+        prompt_for_password(password_prompt, uniform_password)
+        exec_user,hostname = ""
+        if host.include? '@'
+          # USer defined with host, override provided user
+          exec_user,hostname = host.split('@')
+        else
+          exec_user = user
+          hostname = host
+        end
+        worker = Octosh::Worker.new(hostname, exec_user, @password)
+        
+        puts "#{host} -- #{worker.exec(bash)}"
+      end
+    end
+    
+    def self.exec_script(hosts, script, user, password_prompt=true, uniform_password=false)
+      hosts.each do |host|
+        prompt_for_password(password_prompt, uniform_password)
+        exec_user,hostname = ""
+        if host.include? '@'
+          # USer defined with host, override provided user
+          exec_user,hostname = host.split('@')
+        else
+          exec_user = user
+          hostname = host
+        end
+        worker = Octosh::Worker.new(hostname, exec_user, @password)
+        puts "#{host} -- #{worker.exec_script(script)}"
       end
     end
     

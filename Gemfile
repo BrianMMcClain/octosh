@@ -1,6 +1,7 @@
 source "http://rubygems.org"
 
 gem 'net-ssh', '2.6.1'
+gem 'net-scp', '1.0.4'
 gem 'highline', '1.6.15'
 
 group :test do

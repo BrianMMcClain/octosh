@@ -42,13 +42,9 @@ module Octosh
           options.default_user = user
         end
         
-        options.password_prompt = false
-        opts.on('-p', '--password', 'Prompt for password') do
-          options.password_prompt = true
-        end
-        
+        options.password_prompt = true
         options.uniform_password = false
-        opts.on('-a', '--uniform-password', 'Use the same password for all hosts') do
+        opts.on('-p', '--uniform-password', 'Uniform password') do
           options.uniform_password = true
         end
         
@@ -57,8 +53,6 @@ module Octosh
           exit
         end
       end.parse!
-      
-      puts options.inspect
       
       if not ARGV.empty? and not options.config
         puts "Using config file"

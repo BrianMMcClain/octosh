@@ -1,16 +1,7 @@
 module Octosh
-  
-  module OUTPUT_COLORS
-    RED = 31
-    GREEN = 32
-    YELLOW = 33
-    BLUE = 34
-    MAGENTA = 35
-    CYAN = 36
-  end
-  
+
   module COLORS
-    COLORS = [Octosh::OUTPUT_COLORS::BLUE, Octosh::OUTPUT_COLORS::YELLOW, Octosh::OUTPUT_COLORS::GREEN, Octosh::OUTPUT_COLORS::MAGENTA, Octosh::OUTPUT_COLORS::CYAN]
+    COLORS = [:default, :blue, :green, :yellow, :red, :magenta, :cyan, :white, :light_black, :light_red, :light_green, :light_yellow, :light_blue, :light_magenta, :light_cyan]
   end
   
   class Helper

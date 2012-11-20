@@ -1,3 +1,5 @@
+require 'colorize'
+
 module Octosh
   
   module Commands
@@ -33,10 +35,6 @@ module Octosh
       end
     end
     
-    def colorize(text, color_code)
-      "\e[#{color_code}m#{text}\e[0m"
-    end
-    
     def prompt_for_password(password_prompt, uniform_password, host="current host")
       if password_prompt
         # Password authentication
@@ -54,14 +52,14 @@ module Octosh
       
       puts "Starting Octoshell connected to #{@workers.length} hosts"
       @workers.each do |worker|
-        puts "   #{colorize(worker.host, worker.options[:color])}"
+        puts worker.host.colorize(worker.options[:color].to_sym)
       end
       
       while true
         print ">> "
         command = gets
         Parallel.each(@workers, :in_threads => @workers.length) do |worker|
-          print colorize(worker.exec(command), worker.options[:color])
+          print worker.exec(command).colorize(worker.options[:color].to_sym)
         end
       end
     end

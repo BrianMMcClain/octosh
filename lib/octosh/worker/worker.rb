@@ -7,18 +7,37 @@ module Octosh
   class Worker
     
     attr_reader :host, :user, :password, :ssh
+        
+    @connected = false
+    @options = {}
     
     def initialize(host, user, pass, options = {})
       @host = host
       @user = user
       @password = pass
-      
-      forward_agent = options[:forward_agent] || false
-      
-      @ssh = Net::SSH.start(@host, @user, :password => @password, :forward_agent => forward_agent)
+      @options = options
+    end
+    
+    def connected?
+      return @connected
+    end
+    
+    def connect_if_not_connected
+      if not connected?
+        connect
+      end
+    end
+    
+    def connect
+      if not connected?
+        forward_agent = @options[:forward_agent] || false
+        @ssh = Net::SSH.start(@host, @user, :password => @password, :forward_agent => forward_agent)
+        @connected = true
+      end
     end
     
     def exec(command)
+      connect_if_not_connected
       channel = @ssh.open_channel do |ch|
         ch.exec(command) do |ch, success|
           raise "Error executing #{command}" unless success
@@ -41,14 +60,17 @@ module Octosh
     end
     
     def put(local_path, remote_path)
+      connect_if_not_connected      
       @ssh.scp.upload!(local_path, remote_path)
     end
     
     def get(remote_path, local_path)
+      connect_if_not_connected
       @ssh.scp.download!(remote_path, local_path)
     end
     
     def read(remote_path)
+      connect_if_not_connected
       return @ssh.scp.download!(remote_path)
     end
     

@@ -1,4 +1,11 @@
 module Octosh
+  
+  module Commands
+    GET = :get
+    PUT = :put
+    EXIT = :exit
+  end
+  
   class Shell
     
     @workers = []
@@ -44,6 +51,12 @@ module Octosh
     end
     
     def start
+      
+      puts "Starting Octoshell connected to #{@workers.length} hosts"
+      @workers.each do |worker|
+        puts "   #{colorize(worker.host, worker.options[:color])}"
+      end
+      
       while true
         print ">> "
         command = gets

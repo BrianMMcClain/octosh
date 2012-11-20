@@ -133,6 +133,7 @@ module Octosh
           exec_user = user
           hostname = host
         end
+        
         worker = Octosh::Worker.new(hostname, exec_user, @password, options)
         workers << worker
       end

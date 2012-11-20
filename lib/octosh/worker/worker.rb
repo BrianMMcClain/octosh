@@ -3,13 +3,12 @@ require 'net/scp'
 require 'uuid'
 require 'pathname'
 
-module Octosh
+module Octosh  
   class Worker
     
-    attr_reader :host, :user, :password, :ssh
+    attr_reader :host, :user, :password, :ssh, :options
         
     @connected = false
-    @options = {}
     
     def initialize(host, user, pass, options = {})
       @host = host
@@ -43,15 +42,15 @@ module Octosh
           raise "Error executing #{command}" unless success
           
           ch.on_data do |c, data|
-            puts "#{@host} -- #{data.to_s}"
+            return data.to_s
           end
           
           ch.on_extended_data do |c, type, data|
-            puts "#{@host} -- #{data}"
+            return data.to_s
           end
           
           ch.on_close do
-            puts "Octosh execution complete!"
+            # For now do nothing
           end
         end
       end

@@ -5,6 +5,7 @@ module Octosh
     @password = nil
     
     def initialize(hosts, options)
+      colors = Octosh::COLORS::COLORS.dup
       @workers = []
       hosts.each do |host|
         prompt_for_password(options[:password_prompt], options[:uniform_password])
@@ -16,10 +17,17 @@ module Octosh
           exec_user = options[:default_user]
           hostname = host
         end
-        worker = Octosh::Worker.new(hostname, exec_user, @password, options)
+        worker_options = options.dup
+        worker_options[:color] = colors.shift
+        colors << worker_options[:color]
+        worker = Octosh::Worker.new(hostname, exec_user, @password, worker_options)
         worker.connect
         @workers << worker
       end
+    end
+    
+    def colorize(text, color_code)
+      "\e[#{color_code}m#{text}\e[0m"
     end
     
     def prompt_for_password(password_prompt, uniform_password, host="current host")
@@ -40,7 +48,7 @@ module Octosh
         print ">> "
         command = gets
         Parallel.each(@workers, :in_threads => @workers.length) do |worker|
-          puts "#{worker.host} -- #{worker.exec(command)}"
+          print colorize(worker.exec(command), worker.options[:color])
         end
       end
     end

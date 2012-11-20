@@ -44,6 +44,26 @@ Instead of inline scripting, you can also pass a path to a script to run on each
 
 ```octosh -s /path/to/script -u someuser -p -r 192.168.0.100,192.168.0.101,192.168.0.102```
 
+There's also...
+
+
+INTERACTIVE MODE
+----------------
+
+Interactive mode can be activate with the `-i` flag, for example...
+
+```octosh -i -u someuser -p -r 192.168.0.100,192.168.0.101,192.168.0.102```
+
+You will be prompted for the password(s), and then be greeted by the Octoshell prompt. From here, you can operate as normal as you would on a single server, but all commands will be ran on all servers, color-coded per server.
+
+There are a few special commands however (IN PROGRESS)…
+
+* `put PATH` -- Upload file at PATH to the CWD on the remote hosts
+* `get FILE` -- Download FILE to the CWD on the local machine. Files will be stored in the format "FILENAME-HOST.EXT"
+* `exit` -- Cleanly close the conneciton to all servers and quit OSH
+
+
+
 
 ROADMAP
 -------

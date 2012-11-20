@@ -59,19 +59,31 @@ module Octosh
         print ">> "
         command = ""
         begin
-          command = gets
+          command = gets.chomp!
         rescue Interrupt
-          @workers.each do |worker|
-            print "Closing connection to #{worker.host} . . . ".colorize(worker.options[:color].to_sym)
-            worker.disconnect
-            puts "OK".colorize(worker.options[:color].to_sym)
-          end
+          disconnect
           exit
         end
+        preprocess_command(command || "")
         Parallel.each(@workers, :in_threads => @workers.length) do |worker|
           output = worker.exec(command) || ""
           print output.colorize(worker.options[:color].to_sym)
         end
+      end
+    end
+    
+    def preprocess_command(command)
+      if command.downcase == "exit"
+        disconnect
+        exit
+      end
+    end
+    
+    def disconnect
+      @workers.each do |worker|
+        print "Closing connection to #{worker.host} . . . ".colorize(worker.options[:color].to_sym)
+        worker.disconnect
+        puts "OK".colorize(worker.options[:color].to_sym)
       end
     end
   end

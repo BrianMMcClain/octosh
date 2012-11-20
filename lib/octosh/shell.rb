@@ -9,7 +9,7 @@ module Octosh
   end
   
   class Shell
-    
+        
     @workers = []
     @password = nil
     
@@ -57,9 +57,20 @@ module Octosh
       
       while true
         print ">> "
-        command = gets
+        command = ""
+        begin
+          command = gets
+        rescue Interrupt
+          @workers.each do |worker|
+            print "Closing connection to #{worker.host} . . . ".colorize(worker.options[:color].to_sym)
+            worker.disconnect
+            puts "OK".colorize(worker.options[:color].to_sym)
+          end
+          exit
+        end
         Parallel.each(@workers, :in_threads => @workers.length) do |worker|
-          print worker.exec(command).colorize(worker.options[:color].to_sym)
+          output = worker.exec(command) || ""
+          print output.colorize(worker.options[:color].to_sym)
         end
       end
     end

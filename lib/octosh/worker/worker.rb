@@ -32,7 +32,21 @@ module Octosh
         forward_agent = @options[:forward_agent] || false
         @ssh = Net::SSH.start(@host, @user, :password => @password, :forward_agent => forward_agent)
         @connected = true
+        return true
       end
+      
+      return false
+    end
+    
+    def disconnect
+      if connected?
+        @ssh.close
+        @ssh = nil
+        @connected = false
+        return true
+      end
+      
+      return false
     end
     
     def exec(command)

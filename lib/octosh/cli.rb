@@ -11,6 +11,7 @@ module Octosh
     class MODE
       CONFIG = :config
       INLINE = :inline
+      INTERACTIVE = :interactive
     end
     
     @password = nil
@@ -23,6 +24,7 @@ module Octosh
       options[:password_prompt] = true
       options[:uniform_password] = false
       options[:forward_agent] = false
+      options[:interactive] = false
 
       optparse = OptionParser.new do|opts|
         opts.banner = "Usage: octosh [options] [octo config file]"
@@ -31,6 +33,10 @@ module Octosh
           options[:config] = file
         end
         
+        opts.on('-i', '--interactive', 'Interactive shell prompt') do
+          options[:interactive] = true
+        end
+          
         opts.on('-b', '--bash COMMAND', 'Explicitly define a command(s) to run on all hosts (Requires --hosts switch)') do |bash|
           options[:bash] = bash
         end
@@ -71,6 +77,11 @@ module Octosh
       elsif not ARGV.empty? and options[:config]
         puts "Two config files specified (#{options[:config]} and #{ARGV[0]}), using explicit config file (#{options[:config]})"
         options[:mode] = Octosh::CLI::MODE::CONFIG
+      elsif options[:interactive]
+        puts "Interactive mode"
+        options[:mode] = Octosh::CLI::MODE::INTERACTIVE
+        shell = Octosh::Shell.new(options[:hosts], options)
+        shell.start
       elsif (options[:bash] or options[:script]) and options[:hosts]
         puts "Using inline execution"
         options[:mode] = Octosh::CLI::MODE::INLINE

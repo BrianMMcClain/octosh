@@ -8,12 +8,14 @@ module Octosh
     
     attr_reader :host, :user, :password, :ssh
     
-    def initialize(host, user, pass)
+    def initialize(host, user, pass, options = {})
       @host = host
       @user = user
       @password = pass
       
-      @ssh = Net::SSH.start(@host, @user, :password => @password)
+      forward_agent = options[:forward_agent] || false
+      
+      @ssh = Net::SSH.start(@host, @user, :password => @password, :forward_agent => forward_agent)
     end
     
     def exec(command)

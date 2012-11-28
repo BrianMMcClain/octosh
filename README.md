@@ -60,7 +60,7 @@ There are a few special commands however (IN PROGRESS)…
 
 * `put PATH` -- Upload file at PATH to the CWD on the remote hosts
 * `get FILE` -- Download FILE to the CWD on the local machine. Files will be stored in the format "FILENAME-HOST.EXT"
-* `exit` -- Cleanly close the conneciton to all servers and quit OSH
+* `exit` -- Cleanly close the conneciton to all servers and quit OSH	
 
 
 

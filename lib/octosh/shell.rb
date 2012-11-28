@@ -66,8 +66,9 @@ module Octosh
         end
         preprocess_command(command || "")
         Parallel.each(@workers, :in_threads => @workers.length) do |worker|
-          output = worker.exec(command) || ""
-          print output.colorize(worker.options[:color].to_sym)
+          output = worker.exec(command) do |output|
+            print output.colorize(worker.options[:color].to_sym)
+          end
         end
       end
     end

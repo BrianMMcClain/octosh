@@ -56,7 +56,11 @@ module Octosh
           raise "Error executing #{command}" unless success
           
           ch.on_data do |c, data|
-            return data.to_s
+            if block_given?
+              yield data.to_s
+            else
+              puts data.to_s
+            end
           end
           
           ch.on_extended_data do |c, type, data|
@@ -91,7 +95,13 @@ module Octosh
       tmp_script_name = "octosh-#{Pathname.new(script_path).basename.to_s}-#{UUID.new.generate}"
       self.put(script_path, "/tmp/#{tmp_script_name}")
       self.exec("chmod +x /tmp/#{tmp_script_name}")
-      return self.exec("/tmp/#{tmp_script_name}")
+      self.exec("/tmp/#{tmp_script_name}") do |output|
+        if block_given?
+          yield output
+        else
+          puts output
+        end
+      end
     end
   end
 end

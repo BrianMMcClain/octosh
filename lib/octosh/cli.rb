@@ -139,7 +139,10 @@ module Octosh
       end
       
       Parallel.each(workers, :in_threads => workers.length) do |worker|
-        puts "#{worker.host} -- #{worker.exec(bash)}"
+        #puts "#{worker.host} -- #{}"
+        worker.exec(bash) do |output|
+          puts "#{worker.host} -- #{output}"
+        end
       end
     end
     
@@ -161,7 +164,9 @@ module Octosh
       end
       
       Parallel.each(workers, :in_threads => workers.length) do |worker|
-        puts "#{worker.host} -- #{worker.exec_script(script)}"
+        worker.exec_script(script) do |output|
+          puts "#{worker.host} -- #{output}"
+        end
       end
       
     end

@@ -4,6 +4,7 @@ require 'parallel'
 
 $:.push File.dirname(__FILE__) + '../'
 require 'octosh'
+require File.expand_path('../version', __FILE__)
 
 module Octosh
   class CLI
@@ -61,6 +62,11 @@ module Octosh
           options[:forward_agent] = true
         end
         
+        opts.on('--version', 'Version') do
+          puts Octosh::VERSION
+          exit
+        end
+
         opts.on_tail('-h', '--help', 'Display this screen' ) do
           puts opts
           exit

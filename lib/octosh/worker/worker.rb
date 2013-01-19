@@ -30,7 +30,12 @@ module Octosh
     def connect
       if not connected?
         forward_agent = @options[:forward_agent] || false
-        @ssh = Net::SSH.start(@host, @user, :password => @password, :forward_agent => forward_agent)
+        begin
+          @ssh = Net::SSH.start(@host, @user, :password => @password, :forward_agent => forward_agent)
+        rescue => e
+          puts "Error connecting to #{host}: #{e.message}"
+          return false
+        end
         @connected = true
         return true
       end
